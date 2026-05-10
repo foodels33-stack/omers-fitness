@@ -1,49 +1,72 @@
 import streamlit as st
+import pandas as pd
+from datetime import datetime
 
-# --- 1. הגדרות מיתוג ומראה מקצועי ---
-st.set_page_config(page_title="Omer's Fitness", layout="centered", page_icon="🏋️")
+# --- 1. הגדרות מיתוג ואייקון כושר (במקום Streamlit) ---
+st.set_page_config(
+    page_title="Omer's Fitness", 
+    layout="centered", 
+    page_icon="🏋️"  # זה האייקון שיוצג על שולחן העבודה
+)
 
-# עיצוב CSS מתוקן לנראות מקסימלית
-hide_style = """
+# עיצוב CSS למראה שחור מקצועי ויוקרתי
+style = """
     <style>
+    /* רקע שחור עמוק */
+    .stApp { background-color: #000000; color: #FFFFFF; }
+    
+    /* הסתרת רכיבי Streamlit */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
-    [data-testid="stMetricValue"] { font-size: 1.8rem; color: #CCFF00; }
-    .stExpander { border: 1px solid #CCFF00; border-radius: 10px; margin-bottom: 10px; }
-    div.stButton > button:first-child {
-        background-color: #CCFF00; color: black; font-weight: bold; border-radius: 20px; width: 100%;
-    }
-    /* תיקון לנראות הטקסט בתיבות המידע */
+    
+    /* עיצוב כותרות ומדדים */
+    h1, h2, h3 { color: #CCFF00 !important; font-family: 'Arial'; }
+    [data-testid="stMetricValue"] { color: #CCFF00; font-weight: bold; }
+    
+    /* תיבות תוכן מעוצבות */
     .custom-box {
-        background-color: #1E1E1E; 
+        background-color: #111111; 
         padding: 20px; 
-        border-radius: 10px; 
-        border-right: 5px solid #CCFF00; 
-        color: #FFFFFF !important;
+        border-radius: 12px; 
+        border: 1px solid #333333;
+        border-right: 5px solid #CCFF00;
+        color: #FFFFFF;
         margin-bottom: 20px;
+    }
+    
+    /* כפתור סיום אימון */
+    div.stButton > button:first-child {
+        background-color: #CCFF00; 
+        color: black; 
+        font-weight: bold; 
+        border-radius: 30px; 
+        height: 55px;
+        border: none;
+        font-size: 1.2rem;
     }
     </style>
 """
-st.markdown(hide_style, unsafe_allow_html=True)
+st.markdown(style, unsafe_allow_html=True)
 
-# --- 2. מנוע סגמנטציה וחישוב AI ---
+# --- 2. מנוע סגמנטציה וחישוב נתונים ---
 def analyze_user(w, h, a, act):
     bmi = w / ((h/100) ** 2)
     bmr = (10 * w) + (6.25 * h) - (5 * a) + 5
     tdee = bmr * act
     
     if bmi < 18.5:
-        status, strategy, target_cal, protein = "מבנה רזה (אקטומורף)", "מסה אגרסיבית", tdee + 500, w * 2.2
+        res = {"status": "מבנה רזה", "strat": "מסה אגרסיבית", "cal": tdee + 500, "prot": w * 2.2}
     elif 18.5 <= bmi < 25:
-        status, strategy, target_cal, protein = "מבנה אתלטי (מזומורף)", "מסה נקייה", tdee + 300, w * 2.0
+        res = {"status": "מבנה אתלטי", "strat": "מסה נקייה", "cal": tdee + 300, "prot": w * 2.0}
     else:
-        status, strategy, target_cal, protein = "מבנה רחב (אנדומורף)", "בניית שריר וחיטוב", tdee - 100, w * 2.4
-        
-    return {"bmi": round(bmi, 1), "status": status, "strategy": strategy, "cal": round(target_cal), "prot": round(protein)}
+        res = {"status": "מבנה רחב", "strat": "חיטוב ובניית שריר", "cal": tdee - 100, "prot": w * 2.4}
+    
+    res["bmi"] = round(bmi, 1)
+    return res
 
-# --- 3. ממשק משתמש ---
-st.markdown("<h1 style='text-align: center; color: #CCFF00;'>OMER'S FITNESS</h1>", unsafe_allow_html=True)
+# --- 3. ממשק משתמש וכותרת ---
+st.markdown("<h1 style='text-align: center;'>OMER'S FITNESS</h1>", unsafe_allow_html=True)
 
 with st.sidebar:
     st.header("📋 נתוני לקוח")
@@ -56,65 +79,63 @@ plan = analyze_user(weight, height, age, activity)
 
 # תצוגת אבחון
 st.divider()
-st.subheader("📊 אבחון AI וסגמנטציה")
 c1, c2, c3 = st.columns(3)
 c1.metric("BMI", plan['bmi'])
-c2.metric("יעד קלורי", f"{plan['cal']}")
-c3.metric("חלבון יומי", f"{plan['prot']}g")
+c2.metric("יעד קלורי", f"{round(plan['cal'])}")
+c3.metric("חלבון יומי", f"{round(plan['prot'])}g")
 
-st.markdown(f"""
-<div class="custom-box">
-    <strong>סטטוס גופני:</strong> {plan['status']}<br>
-    <strong>אסטרטגיה:</strong> {plan['strategy']}
-</div>
-""", unsafe_allow_html=True)
+st.markdown(f'<div class="custom-box"><strong>סטטוס:</strong> {plan["status"]} | <strong>אסטרטגיה:</strong> {plan["strat"]}</div>', unsafe_allow_html=True)
+
+# --- 4. תזונה מותאמת ---
+st.subheader("🍎 הנחיות תזונה ליום אימון")
+with st.expander("צפה בתפריט המומלץ שלך"):
+    st.write(f"🍳 **בוקר:** חביתה/ביצים קשות + לחם מלא + אבוקדו.")
+    st.write(f"🍗 **צהריים:** חזה עוף או בקר + פחמימה (אורז/בטטה) + ירקות.")
+    st.write(f"🍌 **לפני אימון:** בננה או חופן תמרים לאנרגיה זמינה.")
+    st.write(f"🥛 **אחרי אימון:** שייק חלבון או טונה + פחמימה להתאוששות.")
 
 st.divider()
 
-# --- 4. תוכנית אימונים ---
-st.subheader("💪 תוכנית אימונים: משקלי עבודה והתקדמות")
+# --- 5. יומן אימון וביצוע ---
+st.subheader("💪 אימון היום: תיעוד וביצוע")
 
-# תיבת הנחיות התקדמות עם תיקון צבע
-st.markdown(f"""
-<div class="custom-box">
-    <h3 style="color: #CCFF00; margin-top: 0;">📈 איך להתקדם?</h3>
-    <p>אם הצלחת לבצע את כל החזרות (12) בכל הסטים באותו משקל - <strong>באימון הבא עליך להוסיף 1.25-2.5 ק"ג לכל צד של המוט.</strong></p>
-    <p>זהו הסוד לבניית שריר ומסה!</p>
-</div>
-""", unsafe_allow_html=True)
+st.markdown('<div class="custom-box"><strong>📈 התקדמות:</strong> אם סיימת את כל הסטים, באימון הבא תוסיף 2.5 ק"ג לכל צד.</div>', unsafe_allow_html=True)
 
 workout_data = [
-    {
-        "name": "סקוואט (Squat)",
-        "ratio": 0.5,
-        "steps": ["פיסוק ברוחב כתפיים", "גב ישר וחזה מורם", "ירידה עד מקביל לרצפה", "דחיפה מהעקבים"],
-        "tip": "דחוף ברכיים החוצה בירידה."
-    },
-    {
-        "name": "לחיצת חזה (Bench Press)",
-        "ratio": 0.4,
-        "steps": ["שכיבה על הספסל", "אחיזה רחבה מהכתפיים", "הורדה למרכז החזה", "דחיפה מעלה"],
-        "tip": "שמור שכמות צמודות לספסל."
-    },
-    {
-        "name": "מתח / פולי עליון",
-        "ratio": 0.35,
-        "steps": ["אחיזה רחבה", "משיכה לחזה עליון", "כיווץ שכמות בשיא", "חזרה איטית"],
-        "tip": "משוך עם המרפקים כלפי מטה."
-    }
+    {"name": "סקוואט (Squat)", "sets": 3, "reps": "8-12", "ratio": 0.5},
+    {"name": "לחיצת חזה (Bench)", "sets": 3, "reps": "8-12", "ratio": 0.4},
+    {"name": "מתח / פולי עליון", "sets": 3, "reps": "10-12", "ratio": 0.35}
 ]
 
-for item in workout_data:
-    suggested_weight = round(weight * item['ratio'] / 2.5) * 2.5
-    with st.expander(f"🏋️ {item['name']}"):
-        st.write(f"**משקל התחלה מומלץ עבורך:** {suggested_weight} ק״ג")
-        st.write("**שלבי ביצוע:**")
-        for s in item['steps']: st.write(f"- {s}")
-        st.warning(f"💡 {item['tip']}")
-        st.write("**פרוטוקול:** 3 סטים X 8-12 חזרות")
-        st.number_input(f"כמה הרמת היום? (ק״ג)", key=f"rec_{item['name']}", value=float(suggested_weight), step=2.5)
+performed = []
+
+for ex in workout_data:
+    suggested = round(weight * ex['ratio'] / 2.5) * 2.5
+    with st.expander(f"🏋️ {ex['name']}"):
+        st.write(f"יעד: {ex['sets']} סטים X {ex['reps']} חזרות")
+        w_lifted = st.number_input(f"משקל (ק״ג)", key=f"w_{ex['name']}", value=float(suggested), step=2.5)
+        r_done = st.number_input(f"חזרות בסט אחרון", key=f"r_{ex['name']}", value=10, step=1)
+        performed.append({"תרגיל": ex['name'], "משקל (ק״ג)": w_lifted, "חזרות": r_done})
 
 st.divider()
-if st.button("סיום אימון ושמירת נתונים"):
+
+# --- 6. סיכום ויומן סופי ---
+if st.button("סכם אימון ושמור ביומן"):
     st.balloons()
-    st.success("האימון נשמר! זכור: אם היה קל, באימון הבא מעלים משקל.")
+    st.header("📋 יומן ביצוע - סיכום האימון")
+    
+    # הצגת טבלת הביצועים של היום
+    summary_df = pd.DataFrame(performed)
+    st.table(summary_df)
+    
+    now = datetime.now().strftime("%d/%m/%Y | %H:%M")
+    st.success(f"האימון נחתם בהצלחה בתאריך {now}")
+    
+    st.markdown(f"""
+    <div class="custom-box">
+        <strong>מה השגנו היום?</strong><br>
+        1. גירוי לצמיחת שריר לפי אסטרטגיית {plan['status']}.<br>
+        2. תיעוד מדויק של משקלים לטובת עומס פרוגרסיבי.<br>
+        3. עמידה ביעדי האימון של Omer's Fitness.
+    </div>
+    """, unsafe_allow_html=True)
