@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
-# --- 1. הגדרות דף ועיצוב (Inspired by Nike & MyFitnessPal) ---
+# --- 1. הגדרות דף ועיצוב ---
 st.set_page_config(
     page_title="Omer's Fitness 2.0",
     page_icon="🏋️",
@@ -10,16 +10,14 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- 2. מנוע עיצוב מותאם אישית (Custom CSS) ---
+# --- 2. מנוע עיצוב מותאם אישית ---
 st.markdown("""
     <style>
-        /* הסתרת אלמנטים של המערכת (Streamlit Branding) */
         #MainMenu {visibility: hidden;}
         footer {visibility: hidden;}
         header {visibility: hidden;}
         .stAppDeployButton {display:none;}
         
-        /* הגדרות רקע וצבעים כלליות */
         .stApp {
             background-color: #000000;
             color: #E0E0E0;
@@ -27,7 +25,6 @@ st.markdown("""
             padding: 1rem !important;
         }
         
-        /* כותרות בסגנון כושר - Lime Green */
         h1, h2, h3 {
             color: #ccff00 !important;
             font-family: 'Inter', sans-serif;
@@ -36,7 +33,6 @@ st.markdown("""
             text-align: center;
         }
 
-        /* עיצוב כרטיסיות מידע (Info Cards) */
         .fitness-card {
             background-color: #1a1a1a;
             border-radius: 12px;
@@ -45,16 +41,11 @@ st.markdown("""
             border: 1px solid rgba(204, 255, 0, 0.1);
         }
         
-        /* עיצוב המטריקות (מאקרו) */
         .stMetricValue {
             color: #ccff00 !important;
             font-size: 32px !important;
         }
-        .stMetricLabel {
-            color: #A0A0A0 !important;
-        }
 
-        /* עיצוב כפתורים */
         div.stButton > button:first-child {
             background-color: #ccff00;
             color: #000;
@@ -65,53 +56,40 @@ st.markdown("""
             text-transform: uppercase;
             height: 3em;
         }
-        
-        div.stButton > button:first-child:hover {
-            background-color: #4ade80;
-            color: #000;
-        }
 
-        /* התאמה לסלולר - מניעת רווחים מיותרים */
         .block-container {
             padding-top: 1rem !important;
-            padding-bottom: 1rem !important;
         }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 3. לוגיקה וחישובים (מבוסס מדע) ---
+# --- 3. לוגיקה ---
 def calculate_macros(w, h, a, act):
     bmr = (10 * w) + (6.25 * h) - (5 * a) + 5
     tdee = bmr * act
-    target_cal = tdee + 350 # עודף קלורי מבוקר למסה
+    target_cal = tdee + 350
     protein = w * 2.0
     fats = (target_cal * 0.25) / 9
     carbs = (target_cal - (protein * 4) - (fats * 9)) / 4
     return round(target_cal), round(protein), round(fats), round(carbs)
 
 EXERCISES_DB = {
-    "סקוואט (Squats)": {"target": "רגליים", "tip": "שמור על גב ישר, רד עם הישבן נמוך."},
-    "לחיצת חזה (Bench Press)": {"target": "חזה, כתפיים", "tip": "הצמד את השכמות לספסל."},
-    "מתח / פולי עליון": {"target": "גב, יד קדמית", "tip": "תחשוב על למשוך עם המרפקים."},
-    "לחיצת כתפיים (Shoulder Press)": {"target": "כתפיים, יד אחורית", "tip": "אל תקשת את הגב התחתון."}
+    "סקוואט (Squats)": {"target": "רגליים", "tip": "גב ישר, לרדת נמוך."},
+    "לחיצת חזה (Bench)": {"target": "חזה", "tip": "שכמות צמודות לספסל."},
+    "מתח / פולי עליון": {"target": "גב", "tip": "למשוך עם המרפקים."},
+    "לחיצת כתפיים": {"target": "כתפיים", "tip": "בטן חזקה, לא לקשת גב."}
 }
 
 # --- 4. הממשק המרכזי ---
 st.title("🏋️ Omer's Fitness")
 
-# סרגל צד - נתונים ומוזיקה
+# סרגל צד לנתונים אישיים בלבד
 with st.sidebar:
     st.header("👤 פרופיל")
     age = st.number_input("גיל", value=16)
     weight = st.number_input("משקל (קג)", value=60.0)
     height = st.number_input("גובה (סמ)", value=175)
     activity = st.select_slider("רמת פעילות", options=[1.2, 1.375, 1.55, 1.725], value=1.55)
-    
-    st.divider()
-    st.subheader("🎵 Workout Music")
-    # פלייליסט לדוגמה - ניתן להחליף בלינק אישי
-    playlist_url = "https://open.spotify.com/embed/playlist/37i9dQZF1DX70UOzfvYubW" 
-    st.markdown(f'<iframe src="{playlist_url}" width="100%" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>', unsafe_allow_html=True)
 
 # כרטיסיית יעדים
 cal, prot, fat, carb = calculate_macros(weight, height, age, activity)
@@ -122,6 +100,13 @@ c1.metric("קלוריות", cal)
 c2.metric("חלבון", f"{prot}g")
 c3.metric("פחמימה", f"{carb}g")
 c4.metric("שומן", f"{fat}g")
+st.markdown('</div>', unsafe_allow_html=True)
+
+# --- מוזיקה במסך הראשי ---
+st.markdown('<div class="fitness-card">', unsafe_allow_html=True)
+st.subheader("🎵 מוזיקה לאימון")
+playlist_url = "https://open.spotify.com/embed/playlist/37i9dQZF1DX76W9SwwE6v4" # פלייליסט מוטיבציה
+st.markdown(f'<iframe src="{playlist_url}" width="100%" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>', unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
 # תוכנית אימון
