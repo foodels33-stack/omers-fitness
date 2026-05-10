@@ -8,7 +8,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- 2. CSS להסתרת ממשק ועיצוב המותג ---
+# --- 2. CSS נקי לעיצוב המותג ---
 st.markdown("""
     <style>
         #MainMenu {visibility: hidden;}
@@ -24,6 +24,7 @@ st.markdown("""
         h1, h2, h3 {
             color: #ccff00 !important;
             text-align: center;
+            text-transform: uppercase;
         }
 
         .fitness-card {
@@ -50,8 +51,7 @@ st.markdown("""
         }
         
         .block-container {
-            padding-top: 1rem !important;
-            padding-bottom: 5rem !important;
+            padding-top: 2rem !important;
         }
     </style>
     """, unsafe_allow_html=True)
@@ -94,31 +94,6 @@ c3.metric("פחמימה", f"{carb}g")
 c4.metric("שומן", f"{fat}g")
 st.markdown('</div>', unsafe_allow_html=True)
 
-# --- מוזיקה ---
-st.markdown('<div class="fitness-card">', unsafe_allow_html=True)
-st.subheader("🎵 פסקול האימון")
-
-music_option = st.radio(
-    "בחר אווירה:",
-    ["מוזיקה מקורית", "רוק", "אלקטרוני"],
-    horizontal=True
-)
-
-if music_option == "מוזיקה מקורית":
-    try:
-        audio_file = open('workout_track.mp3', 'rb')
-        audio_bytes = audio_file.read()
-        st.audio(audio_bytes, format='audio/mp3', loop=True)
-    except FileNotFoundError:
-        st.info("כדי לשמוע את המוזיקה המקורית, העלה קובץ בשם workout_track.mp3 ל-GitHub.")
-
-elif music_option == "רוק":
-    st.markdown("""<iframe width="100%" height="180" src="https://www.youtube.com/embed/5S6p_7q7kEw" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>""", unsafe_allow_html=True)
-
-else:
-    st.markdown("""<iframe width="100%" height="180" src="https://www.youtube.com/embed/4pD_v_7E60s" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>""", unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
-
 # לוג אימון
 st.subheader("💪 לוג אימון")
 for ex, info in EXERCISES_DB.items():
@@ -135,6 +110,10 @@ for ex, info in EXERCISES_DB.items():
 # תפריט
 st.divider()
 st.markdown('<div class="fitness-card">', unsafe_allow_html=True)
-st.subheader("🍴 תפריט יומי לדוגמה")
-st.write("* **צהריים:** 200ג חלבון + 2 כוסות אורז מבושל.")
+st.subheader("🍴 תפריט יומי מומלץ")
+st.write(f"""
+* **בוקר:** שייק מסה עשיר.
+* **צהריים:** 200ג חלבון + 2 כוסות אורז מבושל + ירקות.
+* **ערב:** חביתה מ-2 ביצים, חצי אבוקדו, גבינה ושיפון.
+""")
 st.markdown('</div>', unsafe_allow_html=True)
